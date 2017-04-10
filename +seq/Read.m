@@ -1,9 +1,13 @@
 %{
-# Sequence reads within a run
--> seq.Run
-read_id  :  int   # read number within run 
+# Sequence reads from each lane
+-> seq.Lane
+read_id:  int unsigned   # read number within the lane 
 -----
-read_sequence : varchar(511)  
+read_seq: varchar(100)  # sequence of actual read
+read_qc: varchar (100) # quality control measure for the read sequence
+index_seq: varchar (50) # sequence of the index
+index_qc: varchar(100) # quality control measure for the index sequence
+
 %}
 
 classdef Read < dj.Imported
