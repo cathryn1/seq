@@ -1,5 +1,5 @@
 %{
-# information about human subjects
+# human subject-specific informaiton
 -> seq.Subject
 -----
 age: decimal(4,1) #  age in years at sample collection

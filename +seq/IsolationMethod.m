@@ -1,6 +1,6 @@
 %{
-# cell isolation method 
-iso_meth  : char(20)  # short name e.g. dissociation, cellsort, patching 
+# method of obtaining single cell samples 
+iso_meth  : char(20)  # short name of method for isolating single cells 
 -----
 %}
 
@@ -8,9 +8,11 @@ classdef IsolationMethod < dj.Lookup
     methods
         function fill(self)
             self.inserti({
-                'dissociation' 
-                'cellsort' 
-                'patching'  
+                'FACS sorting' 
+                'Fluidigm' 
+                'Manual cell picking'  
+                'Patching'
+                'Laser capture microdissection'
             })
         end
     end
