@@ -1,6 +1,6 @@
 %{
 # information about each sequencing library 
-lib_id : varchar(20)  # unique id for each library
+lib_id : varchar(40)  # unique id for each library
 -----
 ->seq.LibraryType
 ->seq.LibraryProtocol
