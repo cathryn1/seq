@@ -105,8 +105,6 @@ class Read(dj.Imported):
                            index1_qc=qc[1].strip(),
                            index2_seq='' if len(seq) < 3 else seq[2].strip(),
                            index2_qc='' if len(qc) < 3 else qc[2].strip())
-            else:
-                raise IndexError
 
         file_mask = (Run() & key).fetch1['file_pattern']
         file_mask = file_mask.format(run=key['run_id'], lane=key['lane'])
@@ -119,10 +117,10 @@ class Read(dj.Imported):
         rec_reader = zip(*([zip(*fids)]*lines_per_record))
         read_iterator = form_iter(rec_reader)
         while True:
-            print('.', end='\n' if random.random()<0.04 else '', flush=True)
-            try:
-                self.insert(itertools.islice(read_iterator, 1000))
-            except IndexError:
+            print('.', end='\n' if random.random() < 0.04 else '', flush=True)
+            chunk = list(itertools.islice(read_iterator, 5000))
+            self.insert(chunk)
+            if not chunk:
                 break
         for f in fids:
             f.close()

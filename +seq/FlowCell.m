@@ -12,7 +12,7 @@ classdef FlowCell < dj.Imported
 	methods(Access=protected)
 
 		function makeTuples(self, key)
-		%!!! compute missing fields for key here
+            error 'this table is populated in python'
 			 self.insert(key)
 		end
 	end
