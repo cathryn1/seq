@@ -116,12 +116,12 @@ class Read(dj.Imported):
         lines_per_record = 4
         rec_reader = zip(*([zip(*fids)]*lines_per_record))
         read_iterator = form_iter(rec_reader)
-        while True:
+        get_chunk = lambda: list(itertools.islice(read_iterator, 4000))
+        chunk = get_chunk()
+        while chunk:
             print('.', end='\n' if random.random() < 0.04 else '', flush=True)
-            chunk = list(itertools.islice(read_iterator, 5000))
             self.insert(chunk)
-            if not chunk:
-                break
+            chunk = get_chunk()
         for f in fids:
             f.close()
 
