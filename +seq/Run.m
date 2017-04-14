@@ -1,10 +1,9 @@
 %{
-# information about each sequencing run 
-run_id : varchar(20)  # unique id for each run
------
-machine=null: varchar(25) # machine used for sequencing, i.e. HiSeq 2500
-flowcell=null: varchar(25) # flowcell used on this run
-
+# information about each sequencing run
+run_id                      : smallint unsigned             # unique id for each run
+---
+file_pattern                : varchar(255)                  # data folder for the filede
+machine                     : varchar(25)                   # machine used for sequencing, i.e. HiSeq 2500
 %}
 
 classdef Run < dj.Manual
