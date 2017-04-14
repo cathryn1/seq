@@ -8,29 +8,10 @@ import random
 schema = dj.schema('seq_seq', locals())
 
 
-base64alphabet = ''.join(
-    [chr(i + 65) for i in range(26)] +
-    [chr(i + 97) for i in range(26)] +
-    [chr(i + 48) for i in range(10)] + ['+', '/'])
-
-tribase = {''.join(s): base64alphabet[i] for i, s in enumerate(itertools.product('ACGT', repeat=3))}
-itribase = {v: k for k, v in tribase.items()}
-
-
-def seq_to_base64(s):
-    it = iter(s)
-    return ''.join([tribase[''.join(tri)] for tri in itertools.zip_longest(it, it, it, fillvalue='A')]) + str(len(s) % 3)
-
-
-def base64_to_seq(s):
-    return ''.join(itribase[c] for c in s)[:-2-int(s[-1])]
-
-
-
 @schema
 class SequencingPrimers(dj.Lookup):
     definition = """
-    primers : varchar(30)  # primers used for sequencing, e.g. Nextera s7+i5
+    seq_primers : varchar(30)  # primers used for sequencing, e.g. Nextera s7+i5
     """
     contents = [
         ['Nextera s7+i5']
@@ -42,7 +23,7 @@ class Pool(dj.Manual):
     definition = """   # information about each pool of cDNA sent for sequencing
     pool_id : varchar(20)  # unique id for each pool
     -----
-    size=null: tinyint unsigned # mean size of pooled cDNA sent for sequencing (in bp)
+    size=null: smallint unsigned # mean size of pooled cDNA sent for sequencing (in bp)
     conc=null: decimal(3,2) # final concentration of pooled cDNA sent for sequencing (in ng/ul)
     """
 
@@ -70,12 +51,14 @@ class Lane(dj.Manual):
     """
 
 
+
+
 @schema
 class FlowCell(dj.Imported):
     definition = """
     -> Run
     ---
-    flow_cell='' : varchar(255)  # flowcell used on this run
+    flowcell='' : varchar(255)  # flowcell used on this run
     run_date : date    # run date
     """
 
@@ -87,7 +70,7 @@ class FlowCell(dj.Imported):
             raise Exception('Did not find any matching files for the run')
         parts = os.path.basename(filenames[0]).split('_')
         key['run_date'] = datetime.strptime(parts[3], '%y%m%d')
-        key['flow_cell'] = parts[6].split('.')[0]
+        key['flowcell'] = parts[6].split('.')[0]
         self.insert1(key)
 
 
