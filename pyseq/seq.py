@@ -2,9 +2,13 @@ import datajoint as dj
 import gzip
 import glob
 import os
+import re
+import subprocess
 from datetime import datetime
 import itertools
 import random
+import tqdm
+import seqbase64
 schema = dj.schema('seq_seq', locals())
 
 
@@ -51,8 +55,6 @@ class Lane(dj.Manual):
     """
 
 
-
-
 @schema
 class FlowCell(dj.Imported):
     definition = """
@@ -74,17 +76,23 @@ class FlowCell(dj.Imported):
         self.insert1(key)
 
 
+def count_lines(gzfile):
+    proc = subprocess.Popen(('gunzip', '-c', gzfile), stdout=subprocess.PIPE)
+    output = subprocess.check_output(('wc', '-l'), stdin=proc.stdout)
+    return int(re.search(r'\d+', output.decode()).group())
+
+
 @schema
 class Read(dj.Imported):
     definition = """
     -> Lane
-    read_id                     : char(16)                  # machine-assigned id
+    read_id                     : int                 # sequential id
     ---
-    read_seq                    : varchar(100)                  # sequence of actual read
+    read_seq                    : varchar(100)                  # base64 ASCII-encoded sequence of actual read
     read_qc                     : varchar(100)                  # quality control measure for the read sequence
-    index1_seq                : varchar(50)                   # sequence of the index
+    index1_seq                : varchar(50)                   # base64 ASCII-encoded sequence of the index
     index1_qc                  : varchar(100)                  # quality control measure for the index sequence
-    index2_seq=''                : varchar(50)                   # sequence of the index
+    index2_seq=''                : varchar(50)                   # base64 ASCII-encoded sequence of the index
     index2_qc=''                 : varchar(100)                  # quality control measure for the index sequence
     """
 
@@ -95,17 +103,16 @@ class Read(dj.Imported):
             :param it: iterator of reads
             :return: yields dicts to insert
             """
-            for rec in it:
-                ids = rec[0]
+            for i, rec in enumerate(it):
                 seq = rec[1]
                 qc = rec[3]
                 yield dict(key,
-                           read_id='_'.join(ids[0].split('_')[4:6]).strip(),
-                           read_seq=seq[0].strip(),
+                           read_id=i,
+                           read_seq=seqbase64.encode(seq[0].strip()),
                            read_qc=qc[0].strip(),
-                           index1_seq=seq[1].strip(),
+                           index1_seq=seqbase64.encode(seq[1].strip()),
                            index1_qc=qc[1].strip(),
-                           index2_seq='' if len(seq) < 3 else seq[2].strip(),
+                           index2_seq='' if len(seq) < 3 else seqbase64.encode(seq[2].strip()),
                            index2_qc='' if len(qc) < 3 else qc[2].strip())
 
         file_mask = (Run() & key).fetch1['file_pattern']
@@ -114,16 +121,21 @@ class Read(dj.Imported):
         assert len(filenames) in [2, 3]
         if not filenames:
             raise Exception('Did not find any matching files for the run')
+        nreads = count_lines(filenames[0])//4
+        print('Importing {nreads} reads'.format(nreads=nreads))
         fids = [gzip.open(name, 'rt') for name in sorted(filenames)]
         lines_per_record = 4
         rec_reader = zip(*([zip(*fids)]*lines_per_record))   # reads chunks of four lines from three files
         read_iterator = form_iter(rec_reader)                # formats into insertable tuples
-        get_chunk = lambda: list(itertools.islice(read_iterator, 4000))    # forms chunks of tuples
+        chunk_size = 4000
+        get_chunk = lambda: list(itertools.islice(read_iterator, chunk_size))  # forms chunks of tuples
         chunk = get_chunk()
-        while chunk:
-            print('.', end='\n' if random.random() < 0.04 else '', flush=True)
-            self.insert(chunk)
-            chunk = get_chunk()
+        with tqdm(total=nreads) as progress:
+            while chunk:
+                print('.', end='\n' if random.random() < 0.04 else '', flush=True)
+                self.insert(chunk)
+                chunk = get_chunk()
+                progress.update(chunk_size)
         for f in fids:
             f.close()
 
