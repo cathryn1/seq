@@ -1,6 +1,6 @@
 %{
 # 
-primers                     : varchar(30)                   # primers used for sequencing, e.g. Nextera s7+i5
+seq_primers                 : varchar(30)                   # primers used for sequencing, e.g. Nextera s7+i5
 %}
 
 
