@@ -6,7 +6,7 @@ import re
 import subprocess
 from datetime import datetime
 import itertools
-import tqdm
+from tqdm import tqdm
 import seqbase64
 schema = dj.schema('seq_seq', locals())
 
