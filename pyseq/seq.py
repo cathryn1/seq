@@ -8,6 +8,25 @@ import random
 schema = dj.schema('seq_seq', locals())
 
 
+base64alphabet = ''.join(
+    [chr(i + 65) for i in range(26)] +
+    [chr(i + 97) for i in range(26)] +
+    [chr(i + 48) for i in range(10)] + ['+', '/'])
+
+tribase = {''.join(s): base64alphabet[i] for i, s in enumerate(itertools.product('ACGT', repeat=3))}
+itribase = {v: k for k, v in tribase.items()}
+
+
+def seq_to_base64(s):
+    it = iter(s)
+    return ''.join([tribase[''.join(tri)] for tri in itertools.zip_longest(it, it, it, fillvalue='A')]) + str(len(s) % 3)
+
+
+def base64_to_seq(s):
+    return ''.join(itribase[c] for c in s)[:-2-int(s[-1])]
+
+
+
 @schema
 class SequencingPrimers(dj.Lookup):
     definition = """
@@ -114,9 +133,9 @@ class Read(dj.Imported):
             raise Exception('Did not find any matching files for the run')
         fids = [gzip.open(name, 'rt') for name in sorted(filenames)]
         lines_per_record = 4
-        rec_reader = zip(*([zip(*fids)]*lines_per_record))
-        read_iterator = form_iter(rec_reader)
-        get_chunk = lambda: list(itertools.islice(read_iterator, 4000))
+        rec_reader = zip(*([zip(*fids)]*lines_per_record))   # reads chunks of four lines from three files
+        read_iterator = form_iter(rec_reader)                # formats into insertable tuples
+        get_chunk = lambda: list(itertools.islice(read_iterator, 4000))    # forms chunks of tuples
         chunk = get_chunk()
         while chunk:
             print('.', end='\n' if random.random() < 0.04 else '', flush=True)
@@ -124,5 +143,7 @@ class Read(dj.Imported):
             chunk = get_chunk()
         for f in fids:
             f.close()
+
+
 
 schema.spawn_missing_classes()
