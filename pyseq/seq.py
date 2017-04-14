@@ -6,7 +6,6 @@ import re
 import subprocess
 from datetime import datetime
 import itertools
-import random
 import tqdm
 import seqbase64
 schema = dj.schema('seq_seq', locals())
@@ -132,13 +131,10 @@ class Read(dj.Imported):
         chunk = get_chunk()
         with tqdm(total=nreads) as progress:
             while chunk:
-                print('.', end='\n' if random.random() < 0.04 else '', flush=True)
                 self.insert(chunk)
                 chunk = get_chunk()
                 progress.update(chunk_size)
         for f in fids:
             f.close()
-
-
 
 schema.spawn_missing_classes()
