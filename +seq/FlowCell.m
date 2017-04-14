@@ -2,7 +2,7 @@
 # 
 -> seq.Run
 ---
-flow_cell                   : varchar(255)                  # flowcell used on this run
+flowcell                    : varchar(255)                  # flowcell used on this run
 run_date                    : date                          # run date
 %}
 
