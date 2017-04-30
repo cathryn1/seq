@@ -2,7 +2,6 @@ m = [];
 
 
 for i = 1:length(mgiID)
-    m(i).species = 'mouse';
     m(i).assembly = 'mm10';
     m(i).gene_symbol = geneSymbol{i};
     m(i).mgi_id = mgiID(i);
