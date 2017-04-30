@@ -11,7 +11,8 @@ classdef IsolationMethod < dj.Lookup
                 'FACS sorting' 
                 'Fluidigm' 
                 'Manual cell picking'  
-                'Patching'
+                'Patching in vivo'
+                'Patching ex vivo'
                 'Laser capture microdissection'
             })
         end
