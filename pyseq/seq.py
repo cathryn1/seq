@@ -8,8 +8,7 @@ from datetime import datetime
 import itertools
 from tqdm import tqdm
 import seqbase64
-from io import StringIO, BytesIO
-import urllib.request
+from io import BytesIO
 import urllib.parse
 import ftplib
 
