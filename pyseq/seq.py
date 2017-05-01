@@ -7,9 +7,8 @@ import subprocess
 from datetime import datetime
 import itertools
 from tqdm import tqdm
-import seqbase64
-from io import StringIO, BytesIO
-import urllib.request
+import . seqbase64
+from io import BytesIO
 import urllib.parse
 import ftplib
 
@@ -91,7 +90,7 @@ def count_lines(gzfile):
 class Read(dj.Imported):
     definition = """
     -> Lane
-    read_id                     : int                 # sequential id
+    read_id                     : varchar(24)                 # machine-assigned id
     ---
     read_seq                    : varchar(100)                  # base64 ASCII-encoded sequence of actual read
     read_qc                     : varchar(100)                  # quality control measure for the read sequence
@@ -102,6 +101,33 @@ class Read(dj.Imported):
     """
 
     def _make_tuples(self, key):
+        # imports from demultiplexed datasets
+        
+        def generate_elements(source, key):
+            for rec in source:
+                index1_seq, index2_seq = rec[0].split(':')[-1].split('+')
+                yield dict(key,
+                           read_id = ':'.join(rec[0].split(':')[3:7]).split(' ')[0],
+                           index1_seq=index1_seq,
+                           index2_seq=index2_seq,
+                           read_seq=rec[1],
+                           read_qc=rec[3])
+
+        file_mask = (Run() & key).fetch1['file_pattern']
+        folders = glob.glob(file_mask)
+        if not folders: 
+            raise Exception('No matching files found')
+        chunk_size = 8000
+        for folder in tqdm(folders):
+            for filename in glob.glob(os.path.join(folder, '*.gz')):
+                with gzip.open(filename, 'rt') as f:
+                    source = generate_elements(zip(f,f,f,f), key)
+                    get_chunk = lambda: list(itertools.islice(source, chunk_size))
+                    for chunk in iter(get_chunk, []):
+                        self.insert(chunk)
+
+        
+    def _make_tuples_nondemultiplxed(self, key):
 
         def form_iter(it):
             """
@@ -143,6 +169,47 @@ class Read(dj.Imported):
         for f in fids:
             f.close()
 
+
+@schema
+class DemultRead(dj.Imported):
+    definition = """
+     # 
+     -> Read
+     ---
+     -> PooledSample
+    """
+    
+    @property
+    def key_source(self):
+        return Lane()
+
+   
+    def _make_tuples(self, key):
+
+        lib_id = Library() & (Lane()*Pool() & key).fetch1['lib_id']
+
+        def generate_elements(source, key): 
+            for rec in source:
+               yield dict(key,
+                          lib_id=lib_id,
+                          read_id = ':'.join(rec[0].split(':')[3:7]).split(' ')[0],
+                          lib_samp_id = '_'.join(filename.split('_')[0:3]))
+                   
+        # imports from demultiplexed datasets
+        file_mask = (Run() & key).fetch1['file_pattern']
+        folders = glob.glob(file_mask)
+        if not folders: 
+            raise Exception('No matching files found')
+        chunk_size=8000
+        for folder in tqdm(folders):
+            for filename in glob.glob(os.path.join(folder, '*.gz')):
+                with gzip.open(filename, 'rt') as f:
+                    source = generate_elements(zip(f,f,f,f), key)
+                    get_chunk = lambda: list(itertools.islice(source, chunk_size))
+                    for chunk in iter(get_chunk, []):
+                    	self.insert(chunk)
+        
+    
 
 @schema
 class Species(dj.Lookup):
