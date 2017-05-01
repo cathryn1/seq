@@ -3,7 +3,7 @@
 assembly: varchar(20) # short name of genome assembly
 -----
 -> seq.Species
-source_location = ''  : varchar(255)  # a file or ftp or 
+source_location = ''  : varchar(255)  # a file or ftp or
 %}
 
 classdef Genome < dj.Lookup
@@ -18,4 +18,5 @@ classdef Genome < dj.Lookup
             'eGFP' '' ''
             }
     end
+    
 end
