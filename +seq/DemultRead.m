@@ -1,9 +1,8 @@
 %{
 # 
 ->seq.Read
-->seq.LibrarySample
-->seq.DemultInfo
 ---
+->seq.PooledSample
 %}
 
 classdef DemultRead < dj.Imported

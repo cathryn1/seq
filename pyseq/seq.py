@@ -7,9 +7,8 @@ import subprocess
 from datetime import datetime
 import itertools
 from tqdm import tqdm
-from . import seqbase64
-from io import StringIO, BytesIO
-import urllib.request
+import . seqbase64
+from io import BytesIO
 import urllib.parse
 import ftplib
 

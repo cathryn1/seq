@@ -3,9 +3,9 @@
 -> seq.Genome
 gene_symbol                 : varchar(20)                   # official gene symbol
 ---
-mgi_id                      : int unsigned                  # MGI accession ID
-gene_type                   : varchar(30)                   # type of gene, i.e. gene, pseudogene
-gene_name                   : varchar(255)                  # full gene name
+mgi_id=null                 : int unsigned                  # MGI accession ID
+gene_type=null              : varchar(30)                   # type of gene, i.e. gene, pseudogene
+gene_name=null              : varchar(255)                  # full gene name
 entrez_id=null              : int unsigned                  # Entrez gene ID
 ncbi_chr=null               : varchar(2)                    # NCBI gene chromosome
 ncbi_start=null             : int unsigned                  # NCBI gene start

@@ -1,7 +1,7 @@
 %{
 # 
 -> seq.Lane
-read_id                     : int                           # sequential id
+read_id                     : varchar(24)                   # machine-assigned id
 ---
 read_seq                    : varchar(100)                  # base64 ASCII-encoded sequence of actual read
 read_qc                     : varchar(100)                  # quality control measure for the read sequence
