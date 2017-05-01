@@ -4,9 +4,10 @@ filedir = ['/Users/cathryn/dna/genomes/chrom/' genome];
 cd(filedir)
 m = [];
 m.assembly = genome;
-unitfile = dir([filedir '/*.fa']);
+file = dir([filedir '/*.txt']);
 
-for i = 12 %:length(unitfile)
+for i = 1:length(file)
+    libSampleID = 
     fileID = fopen(unitfile(i).name);
     data = textscan(fileID,'%q');
     m.assembly_unit = extractAfter(data{1}{1},'>');

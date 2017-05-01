@@ -1,10 +1,9 @@
 %{
 # Number of reads mapping to each transcript for each sample, computed within datajoint using read alignment and annotations 
 ->seq.PooledSample
-->seq.Transcript
+->seq.AnnotatedGene
 ---
 comp_tx_read_count :int unsigned       # total number of reads mapped to this transcript for each sample using the specificed annotation database
-
 %}
 
 classdef TranscriptReadCountComputed < dj.Computed  
