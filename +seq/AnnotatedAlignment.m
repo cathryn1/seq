@@ -1,7 +1,6 @@
 %{
 # Information about each alignment (import from .bam file)
 ->seq.Alignment
-->seq.AnnotationDatabase
 ->seq.AnnotatedGene
 ---
 map_loc: double     # read location with respect to entire gene body

@@ -1,6 +1,5 @@
 %{
 # QC metrics computed for mapped reads using specified annotation database
-->seq.AlignmentInfo
 ->seq.PooledSample
 ->seq.AnnotationDatabase
 ---
@@ -15,7 +14,7 @@ mordor_index:   double  # estimated severity of the 'mordor effect', i.e. a sing
 bias53:   double      # estimated slope of the 5' to 3' gene body coverage, filtered to remove sharp peaks 
 %}
 
-classdef AnnotatedAlignmentQC < dj.Computed  
+classdef MappingQC < dj.Computed  
            
     methods(Access=protected)
         

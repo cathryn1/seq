@@ -1,7 +1,7 @@
 %{
 # QC metrics computed for reads aligned to the genome
-->seq.AlignmentInfo
 ->seq.PooledSample
+->seq.Genome
 ---
 total_reads     :int unsigned       # total number of reads for each pooled sample
 uniquemap_reads       : double            # percent of reads uniquely mapping to the genome
