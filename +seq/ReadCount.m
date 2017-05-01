@@ -1,9 +1,11 @@
 %{
-# 
-->seq.Alignment
-->seq.LibrarySample
+# Coumpute number of reads mapping to annotated genes, and whether they map
+to exons or introns/UTR
+->seq.AnnotatedGene
+->seq.PooledSample
 ---
-total_reads     :int unsigned       # total number of reads 
+gene_reads     :int unsigned       # total number of reads for this
+annotated gene
 read_length     : tinyint unsigned  # read length 
 unique       : double            # percent of reads uniquely mapping to the genome
 multi           :double             # percent of reads mapping to multiple loci in the genome
@@ -12,7 +14,7 @@ splices         : double            # number of splices
 non_can_splices  : double            # percent of splices that are non-canonical 
 %}
 
-classdef RPKM < dj.Computed
+classdef ReadCount < dj.Computed
        
     methods(Access=protected)
         
