@@ -1,7 +1,7 @@
 %{
 # 
-->seq.Alignment
-->seq.LibrarySample
+->seq.AlignmentInfo
+->seq.PooledSample
 ---
 total_sequences     :int unsigned       # total number of sequences in file
 poor                : int unsigned      # number of sequences tagged as poor quality
@@ -26,8 +26,8 @@ classdef FastQC < dj.Imported
     methods(Access=protected)
         
         function makeTuples(self, key)
-            error 'this table is populated in python'
-            self.insert(key)
+            %error 'this table is populated in python'
+            %self.insert(key)
         end
     end
     
