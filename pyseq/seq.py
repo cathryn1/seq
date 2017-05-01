@@ -8,6 +8,12 @@ from datetime import datetime
 import itertools
 from tqdm import tqdm
 import seqbase64
+from io import StringIO, BytesIO
+import urllib.request
+import urllib.parse
+import ftplib
+
+
 schema = dj.schema('seq_seq', locals())
 
 
@@ -136,5 +142,53 @@ class Read(dj.Imported):
                 progress.update(chunk_size)
         for f in fids:
             f.close()
+
+
+@schema
+class Species(dj.Lookup):
+    definition = """
+    # Source of genetic material
+    species              : varchar(20)                  # short name of species
+    ---
+    species_name         : varchar(100)                 # long name of species
+    """
+
+
+@schema
+class Genome(dj.Lookup):
+    definition = """
+    # genome assembly used for alignment
+    assembly             : varchar(20)                  # short name of genome assembly
+    ---
+    -> Species
+    source_location=""   : varchar(255)                 # a file or ftp or
+    """
+
+
+@schema
+class AssemblyUnit(dj.Imported):
+    definition = """
+    -> Genome
+    assembly_unit        : varchar(40)                  # short name of assembly unit
+    ---
+    assembly_seq=null    : longblob                     # full sequence of assembly unit, if known
+    """
+
+    @property
+    def key_source(self):
+        return Genome() & 'source_location > ""'
+
+    def _make_tuples(self, key):
+        source = urllib.parse.urlparse((Genome() & key).fetch1['source_location'])
+        ftp = ftplib.FTP(source.netloc)
+        ftp.login()
+        ftp.cwd(source.path)
+        print(source.path)
+        for name in tqdm(sorted(ftp.nlst('chr*.fa.gz'))):
+            sio = BytesIO()
+            ftp.retrbinary('RETR %s' % name, sio.write)
+            lines = gzip.decompress(sio.getvalue()).decode().split('\n')
+            sio.close()
+            self.insert1(dict(key, assembly_unit=lines[0][1:], assembly_seq=''.join(lines[2:])))
 
 schema.spawn_missing_classes()
