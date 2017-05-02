@@ -31,7 +31,7 @@ for i = 1:length(file)
     end
     n = rmfield(m,'gene_read_count');
     [n(:).gene_rpkm] = geneRPKM{:};
-    insert(seqGeneReadCount,m)
+    insert(seq.GeneReadCount,m)
     insert(seq.GeneRPKM,n)
     disp([num2str(i) '/' num2str(length(file)) ' files uploaded'])
 end
