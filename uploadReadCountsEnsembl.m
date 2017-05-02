@@ -1,7 +1,7 @@
 
-ann = 'refseq';
-ann_db = 'RefSeq';
-cd /Users/Cathryn/Dropbox/'Microcolumn Patch-seq data'/rpkmforgenes_star_mm10/refseq/
+ann = 'ensembl';
+ann_db = 'Ensembl';
+cd /Users/Cathryn/Dropbox/'Microcolumn Patch-seq data'/rpkmforgenes_star_mm10/ensembl/
 
 file = dir([cd '/*.txt']);
 mousegenes = fetchn(seq.Gene & 'assembly="mm10"','gene_symbol');
