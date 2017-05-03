@@ -53,7 +53,7 @@ for i = 1:length(sampleID)
 end
 
 insert(seq.LibrarySample,m)
-%%
+
 for i = 1:length(sampleID)
     n(i).pool_id = '170406PatchSeqColumns';
     n(i).lib_id = m(i).lib_id;
@@ -65,10 +65,61 @@ insert(seq.PooledSample,n)
     
 
 
-%% add experimental info to seq.PatchSeqColumns
+%% add experimental info to seq.PatchSeqColumns and seq.PatchSeqMorphology
 
+count = 0;
+time = [7 10 8 15];
+morph = {'pyramidal','pyramidal','neurogliaform','pyramidal'};
 
-%% add experimental info to seq.PatchSeqMorphology
+for i = 1:length(sampleID)
+    clear m
+    m.subject_id = ['AT' subjectID{i}];
+    m.sample_id = sampleID{i};
+    m.pipette_res = pipetteRes(i);
+    if strcmp(layer(i),'4?')
+        m.layer = '4';
+    elseif strcmp(layer(i),'5?')
+        m.layer = '5';
+    elseif strcmp(layer(i),'5A')
+        m.layer = '5';
+    elseif strcmp(layer(i),'23')
+        m.layer = '2/3';
+    else
+        m.layer = layer{i};
+    end
+    if strcmp(firingPattern(i),'fast-spiking?')
+        m.firing_pattern = 'unknown';
+    elseif strcmp(firingPattern(i),'fast-spiking')
+        m.firing_pattern = 'fast spiking';
+    elseif strcmp(firingPattern(i),'regular-spiking interneuron')
+        m.firing_pattern = 'regular spiking';
+    else
+        m.firing_pattern = firingPattern{i};
+    end
+    m.asp = asp{i};
+    if strcmp(label(i),'Morphology')
+        count = count + 1;
+        m.label = 'negative';
+        m.slice = slice{i};
+        m.exp_name = 'PatchSeqMorphology';
+        m.internal = 'K-gluconate 01/2017';
+        m.rri_conc = 1;
+        m.record_time = time(count);
+        m.morph = morph{count};
+        insert(seq.PatchSeqMorphology,m)
+        continue
+    elseif strcmp(label(i),'negative?')
+        m.label = 'negative';
+    elseif strcmp(label(i),'positive?')
+        m.label = 'positive';
+    else
+        m.label = label{i};
+    end
+    m.slice = str2num(slice{i});
+    m.exp_name = 'PatchSeqColumns';
+    insert(seq.PatchSeqColumns,m)
+    disp(['Data uploaded for ' num2str(i) '/' num2str(length(sampleID)) ' samples.'])
+end
 
 
 

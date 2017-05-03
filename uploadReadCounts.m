@@ -15,24 +15,26 @@ for i = 1:length(file)
     gene = data{1}(30:4:end);
     rpkm = data{1}(32:4:end);
     readcount = data{1}(33:4:end);
-    for j = 1:length(gene)
-        if any(strcmp(mousegenes,gene(j))) && sum(length(find(strcmp(gene,gene(j)))))==1
-            count = count + 1;
-            m(count).pool_id = '170406PatchSeqColumns';
-            m(count).lib_id = '170406PatchSeqColumns';
-            m(count).lib_samp_id = libSampleID;
-            m(count).assembly = 'mm10';
-            m(count).gene_symbol = gene{j};
-            m(count).annotation_db = ann_db;
-            m(count).version = 1;
-            m(count).gene_read_count = str2num(readcount{j});
-            geneRPKM{count} = str2num(rpkm{j});
+    if isempty(fetch(seq.GeneReadCount & ['lib_samp_id="' libSampleID '"']))
+        for j = 1:length(gene)
+            if any(strcmp(mousegenes,gene(j))) && sum(length(find(strcmp(gene,gene(j)))))==1
+                count = count + 1;
+                m(count).pool_id = '170406PatchSeqColumns';
+                m(count).lib_id = '170406PatchSeqColumns';
+                m(count).lib_samp_id = libSampleID;
+                m(count).assembly = 'mm10';
+                m(count).gene_symbol = gene{j};
+                m(count).annotation_db = ann_db;
+                m(count).version = 1;
+                m(count).gene_read_count = str2num(readcount{j});
+                geneRPKM{count} = str2num(rpkm{j});
+            end
         end
+        n = rmfield(m,'gene_read_count');
+        [n(:).gene_rpkm] = geneRPKM{:};
+        insert(seq.GeneReadCount,m)
+        insert(seq.GeneRPKM,n)
     end
-    n = rmfield(m,'gene_read_count');
-    [n(:).gene_rpkm] = geneRPKM{:};
-    insert(seq.GeneReadCount,m)
-    insert(seq.GeneRPKM,n)
     disp([num2str(i) '/' num2str(length(file)) ' files uploaded'])
 end
 
