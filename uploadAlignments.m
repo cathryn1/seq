@@ -18,7 +18,7 @@ cd /Users/cathryn/Dropbox/'Microcolumn Patch-seq data'/star_mm10/
 chrom = fetchn(seq.AssemblyUnit & 'assembly="mm10"','assembly_unit');
 
 file = dir([cd '/*.bam']);
-for i = 1 %:length(file)
+for i = 1:length(file)
     samplename = extractBefore(file(i).name,'_unique.bam');
     info = baminfo(file(i).name);
     dict = info.SequenceDictionary;
@@ -29,6 +29,7 @@ for i = 1 %:length(file)
             for k = 1:length(bam)
                 m(k).run_id = 'J00171';
                 m(k).lane = 1;
+                m(k).align_id = 1;
                 readID = strsplit(bam(k).QueryName,':');
                 m(k).read_id = strjoin(readID(4:7),':');
                 tag = bam(k).Tags;
@@ -43,8 +44,8 @@ for i = 1 %:length(file)
                 m(k).align_as = tag.AS;
                 m(k).align_nm = tag.nM;
             end
-            %insert(seq.Alignment,m)
-            return
+            insert(seq.Alignment,m)
         end
     end
+    disp(['Alignments inserted for ' num2str(i) '/' num2str(length(file)) ' cells.'])
 end
