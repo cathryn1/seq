@@ -1,6 +1,7 @@
 %{
 # 
 ->seq.Read
+->seq.DemultInfo
 ---
 ->seq.PooledSample
 %}
