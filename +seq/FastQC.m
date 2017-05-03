@@ -1,6 +1,5 @@
 %{
 # 
-->seq.AlignmentInfo
 ->seq.PooledSample
 ---
 total_sequences     :int unsigned       # total number of sequences in file
