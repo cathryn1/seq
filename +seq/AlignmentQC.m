@@ -20,8 +20,7 @@ classdef AlignmentQC < dj.Imported
     properties
         keySource = seq.PooledSample*seq.Genome & seq.AlignmentInfo;
     end
-    
-           
+         
     methods(Access=protected)
         
         function makeTuples(self, key)
