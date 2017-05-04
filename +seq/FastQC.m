@@ -25,10 +25,6 @@ classdef FastQC < dj.Imported
         rootDataPath = '/Users/cathryn/sandberglab/pipeline3.0/rnaseq/mmu/PatchSeqColumns/fastqc_report';
     end
     
-    properties
-        keySource = seq.PooledSample
-    end
-    
     methods(Access=protected)
         
         function makeTuples(self, key)
