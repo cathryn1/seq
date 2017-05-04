@@ -68,7 +68,7 @@ def count_lines(gzfile):
 @schema
 class Read(dj.Imported):
     definition = """
-    -> Lane
+    -> Lane 
     read_id                     : varchar(24)                 # machine-assigned id
     ---
     read_seq                    : varchar(100)                  # base64 ASCII-encoded sequence of actual read
@@ -81,7 +81,7 @@ class Read(dj.Imported):
 
     def _make_tuples(self, key):
         # imports from demultiplexed datasets
-        
+
         def generate_elements(source, key):
             for rec in source:
                 index1_seq, index2_seq = rec[0].split(':')[-1].split('+')
@@ -94,7 +94,7 @@ class Read(dj.Imported):
 
         file_mask = (Run() & key).fetch1['file_pattern']
         folders = glob.glob(file_mask)
-        if not folders: 
+        if not folders:
             raise Exception('No matching files found')
         chunk_size = 8000
         for folder in tqdm(folders):
@@ -105,7 +105,7 @@ class Read(dj.Imported):
                     for chunk in iter(get_chunk, []):
                         self.insert(chunk)
 
-        
+
     def _make_tuples_nondemultiplxed(self, key):
 
         def form_iter(it):

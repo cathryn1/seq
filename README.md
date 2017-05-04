@@ -12,4 +12,5 @@ The documentation can be found here:
 
 # A minimal example
 A minimal example for navigating and querying the `seq` database in python is found in [Minimal.ipynb](notebooks/Minimal.ipynb).
+Its HTML version (better rendereding) is http://htmlpreview.github.io/?https://github.com/dimitri-yatsenko/seq/blob/master/notebooks/Minimal.html
 
