@@ -68,7 +68,7 @@ def count_lines(gzfile):
 @schema
 class Read(dj.Imported):
     definition = """
-    -> Lane 
+    -> Lane
     read_id                     : varchar(24)                 # machine-assigned id
     ---
     read_seq                    : varchar(100)                  # base64 ASCII-encoded sequence of actual read
