@@ -1,7 +1,7 @@
 %{
 # Information about each alignment (import from .bam file)
-->seq.Read
 ->seq.AlignmentInfo
+->seq.Read
 align_hi:  int unsigned    # hit index
 ---
 ->seq.AssemblyUnit
@@ -16,7 +16,7 @@ align_nm=null: tinyint unsigned     # number of mismatches
 
 classdef Alignment2 < dj.Imported
     properties(Constant)
-        rootDataPath = '/Users/dimitri/Dropbox/Microcolumn Patch-seq data'
+        rootDataPath = '/home/dimitri/dev/seq/data/'
     end
     
     properties
@@ -29,16 +29,17 @@ classdef Alignment2 < dj.Imported
             f = fullfile(self.rootDataPath, fetch1(seq.AlignmentInfo & key, 'folder_name'));
             chrom = fetchn(seq.AssemblyUnit & (seq.AlignmentInfo & key), 'assembly_unit');
             assembly = fetch1(seq.AlignmentInfo & key, 'assembly');
-            
-            files = dir(fullfile(f, '*.bam'));
-            for f = files(:)'
+            files = dir(fullfile(f, '*/*.bam'));
+            if isempty(files)
+                disp 'no files found'
+            end
+            chunk_size = 2000;
+            tuples = [];
+            for f = files'
+                disp(f.name)
                 info = baminfo(fullfile(f.folder, f.name));
-                hbar = waitbar(0, sprintf('reading %s..', f.name));
-                ndicts = length(info.SequenceDictionary);
-                for j = 1:ndicts
-                    d = info.SequenceDictionary(j);
+                for d = info.SequenceDictionary
                     if ismember(d.SequenceName, chrom)
-                        tuples = [];
                         for bam = bamread(fullfile(f.folder, f.name), d.SequenceName,[ 1 d.SequenceLength])'
                             tuple = key;
                             readID = strsplit(bam.QueryName, ':');
@@ -55,13 +56,17 @@ classdef Alignment2 < dj.Imported
                             tuple.align_as = tag.AS;
                             tuple.align_nm = tag.nM;
                             tuples = [tuples; tuple]; %#ok<AGROW>
+                            if length(tuples)>chunk_size
+                                self.insert(tuples)
+                                tuples = [];
+                            end
                         end
-                        self.insert(tuples)
                     end
-                    waitbar(j/ndicts)
                 end
-                close(hbar)
+            end
+            if ~isempty(tuples)
+                self.insert(tuples)
             end
         end
-    end    
+    end
 end
