@@ -7,7 +7,7 @@ import subprocess
 from datetime import datetime
 import itertools
 from tqdm import tqdm
-import . seqbase64
+from . import seqbase64
 from io import BytesIO
 import urllib.parse
 import ftplib
@@ -57,27 +57,6 @@ class Lane(dj.Manual):
      -> SequencingPrimers
      -> Pool
     """
-
-
-@schema
-class FlowCell(dj.Imported):
-    definition = """
-    -> Run
-    ---
-    flowcell='' : varchar(255)  # flowcell used on this run
-    run_date : date    # run date
-    """
-
-    def _make_tuples(self, key):
-        file_mask = (Run() & key).fetch1['file_pattern']
-        file_mask = file_mask.format(run=key['run_id'], lane='*')
-        filenames = glob.glob(file_mask)
-        if not filenames:
-            raise Exception('Did not find any matching files for the run')
-        parts = os.path.basename(filenames[0]).split('_')
-        key['run_date'] = datetime.strptime(parts[3], '%y%m%d')
-        key['flowcell'] = parts[6].split('.')[0]
-        self.insert1(key)
 
 
 def count_lines(gzfile):
@@ -169,48 +148,6 @@ class Read(dj.Imported):
         for f in fids:
             f.close()
 
-
-@schema
-class DemultRead(dj.Imported):
-    definition = """
-     # 
-     -> Read
-     ---
-     -> PooledSample
-    """
-    
-    @property
-    def key_source(self):
-        return Lane()
-
-   
-    def _make_tuples(self, key):
-
-        lib_id = Library() & (Lane()*Pool() & key).fetch1['lib_id']
-
-        def generate_elements(source, key): 
-            for rec in source:
-               yield dict(key,
-                          lib_id=lib_id,
-                          read_id = ':'.join(rec[0].split(':')[3:7]).split(' ')[0],
-                          lib_samp_id = '_'.join(filename.split('_')[0:3]))
-                   
-        # imports from demultiplexed datasets
-        file_mask = (Run() & key).fetch1['file_pattern']
-        folders = glob.glob(file_mask)
-        if not folders: 
-            raise Exception('No matching files found')
-        chunk_size=8000
-        for folder in tqdm(folders):
-            for filename in glob.glob(os.path.join(folder, '*.gz')):
-                with gzip.open(filename, 'rt') as f:
-                    source = generate_elements(zip(f,f,f,f), key)
-                    get_chunk = lambda: list(itertools.islice(source, chunk_size))
-                    for chunk in iter(get_chunk, []):
-                    	self.insert(chunk)
-        
-    
-
 @schema
 class Species(dj.Lookup):
     definition = """
@@ -241,9 +178,7 @@ class AssemblyUnit(dj.Imported):
     assembly_seq=null    : longblob                     # full sequence of assembly unit, if known
     """
 
-    @property
-    def key_source(self):
-        return Genome() & 'source_location > ""'
+    key_source = Genome() & 'source_location > ""'
 
     def _make_tuples(self, key):
         source = urllib.parse.urlparse((Genome() & key).fetch1['source_location'])
@@ -257,5 +192,64 @@ class AssemblyUnit(dj.Imported):
             lines = gzip.decompress(sio.getvalue()).decode().split('\n')
             sio.close()
             self.insert1(dict(key, assembly_unit=lines[0][1:], assembly_seq=''.join(lines[2:])))
+
+
+
+@schema
+class PooledSample(dj.Manual): ...
+
+
+@schema
+class Library(dj.Manual):  ...
+
+
+@schema
+class DemuxInfo(dj.Manual):
+    definition = """
+    # Information about how demultiplexing was performed
+    demux_id                   : tinyint                       # unique id for this demultiplexing procedure
+    ---
+    demux_path                 : varchar(255)                  # path to code used for demultiplexing, if known
+    demux_user                 : varchar(25)                   # person who ran the demultiplexing, i.e. 'Cathryn' or 'Sequencing Core'
+    demux_date=null            : date                          # date demultiplexing was done
+    """
+
+
+@schema
+class DemuxRead(dj.Imported):
+    definition = """
+    ->Read
+    ->DemuxInfo
+    ---
+    ->PooledSample
+    """
+
+    key_source = Lane()*DemuxInfo()
+
+    def _make_tuples(self, key):
+
+        def generate_elements(source, key, pool_id, lib_id):
+            for rec in source:
+                yield dict(key,
+                           lib_id=lib_id,
+                           pool_id=pool_id,
+                           read_id=':'.join(rec[0].split(':')[3:7]).split(' ')[0])
+
+        # imports from demultiplexed datasets
+        file_mask = (Run() & key).fetch1['file_pattern']
+        folders = glob.glob(file_mask)
+        if not folders:
+            raise Exception('No matching files found')
+        chunk_size = 8000
+        for folder in tqdm(folders):
+            for filename in glob.glob(os.path.join(folder, '*.gz')):
+                with gzip.open(filename, 'rt') as f:
+                    key['lib_samp_id'] = os.path.basename(folder)
+                    pool_id, lib_id = (PooledSample() & key).fetch1['pool_id', 'lib_id']
+                    source = generate_elements(zip(f, f, f, f), key, pool_id, lib_id)
+                    get_chunk = lambda: list(itertools.islice(source, chunk_size))
+                    for chunk in iter(get_chunk, []):
+                        self.insert(chunk)
+
 
 schema.spawn_missing_classes()
