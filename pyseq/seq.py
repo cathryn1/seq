@@ -226,16 +226,17 @@ class DemuxRead(dj.Imported):
     ->PooledSample
     """
 
-    key_source = Lane()
+    key_source = Lane()*DemuxInfo()
 
     def _make_tuples(self, key):
 
-        lib_id = (Library() & (Lane() * Pool() & key)).fetch1['lib_id']
+        lib_id, pool_id = (Library() * Pool()  & (Lane() & key)).fetch1['lib_id', 'pool_id']
 
         def generate_elements(source, key):
             for rec in source:
                 yield dict(key,
                            lib_id=lib_id,
+                           pool_id = pool_id,
                            read_id=':'.join(rec[0].split(':')[3:7]).split(' ')[0],
                            lib_samp_id='_'.join(filename.split('_')[0:3]))
 
