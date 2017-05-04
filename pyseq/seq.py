@@ -148,8 +148,6 @@ class Read(dj.Imported):
         for f in fids:
             f.close()
 
-    
-
 @schema
 class Species(dj.Lookup):
     definition = """
@@ -226,18 +224,16 @@ class DemuxRead(dj.Imported):
     ->PooledSample
     """
 
-    key_source = Lane()
+    key_source = Lane()*DemuxInfo()
 
     def _make_tuples(self, key):
 
-        lib_id = (Library() & (Lane() * Pool() & key)).fetch1['lib_id']
-
-        def generate_elements(source, key):
+        def generate_elements(source, key, pool_id, lib_id):
             for rec in source:
                 yield dict(key,
                            lib_id=lib_id,
-                           read_id=':'.join(rec[0].split(':')[3:7]).split(' ')[0],
-                           lib_samp_id='_'.join(filename.split('_')[0:3]))
+                           pool_id=pool_id,
+                           read_id=':'.join(rec[0].split(':')[3:7]).split(' ')[0])
 
         # imports from demultiplexed datasets
         file_mask = (Run() & key).fetch1['file_pattern']
@@ -248,7 +244,9 @@ class DemuxRead(dj.Imported):
         for folder in tqdm(folders):
             for filename in glob.glob(os.path.join(folder, '*.gz')):
                 with gzip.open(filename, 'rt') as f:
-                    source = generate_elements(zip(f, f, f, f), key)
+                    key['lib_samp_id'] = os.path.basename(folder)
+                    pool_id, lib_id = (PooledSample() & key).fetch1['pool_id', 'lib_id']
+                    source = generate_elements(zip(f, f, f, f), key, pool_id, lib_id)
                     get_chunk = lambda: list(itertools.islice(source, chunk_size))
                     for chunk in iter(get_chunk, []):
                         self.insert(chunk)
