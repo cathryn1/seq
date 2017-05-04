@@ -9,7 +9,7 @@ multimap_reads           :double             # percent of reads mapping to multi
 nonmap_reads             : double            # percent of reads not mapping to the genome 
 %}
 
-classdef AlignmentQC < dj.Computed  
+classdef AlignmentQC < dj.Imported  
            
     methods(Access=protected)
         
