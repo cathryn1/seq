@@ -23,7 +23,7 @@ for i = 1:length(file)
     info = baminfo(file(i).name);
     dict = info.SequenceDictionary;
     for j = 1:length(dict)
-        if any(strcmp(chrom,dict(j).SequenceName))
+        if any(strcmp(chrom,dict(j).SequenceName)) 
             clear m
             bam = bamread(file(i).name,dict(j).SequenceName,[1 dict(j).SequenceLength]);
             for k = 1:length(bam)
@@ -44,7 +44,7 @@ for i = 1:length(file)
                 m(k).align_as = tag.AS;
                 m(k).align_nm = tag.nM;
             end
-            insert(seq.Alignment,m)
+            inserti(seq.Alignment,m)
         end
     end
     disp(['Alignments inserted for ' num2str(i) '/' num2str(length(file)) ' cells.'])
