@@ -5,8 +5,8 @@ cd /Users/Cathryn/Dropbox/'Microcolumn Patch-seq data'/rpkmforgenes_star_mm10/re
 
 file = dir([cd '/*.txt']);
 mousegenes = fetchn(seq.Gene & 'assembly="mm10"','gene_symbol');
-
-for i = 1:length(file)
+%%
+for i = 163 %:length(file)
     clear m n geneRPKM
     count = 0;
     libSampleID = extractBefore(file(i).name,['_' ann '.txt']);
@@ -15,7 +15,7 @@ for i = 1:length(file)
     gene = data{1}(30:4:end);
     rpkm = data{1}(32:4:end);
     readcount = data{1}(33:4:end);
-    if isempty(fetch(seq.GeneReadCount & ['lib_samp_id="' libSampleID '"']))
+    if isempty(fetch(seq.GeneReadCount & ['lib_samp_id="' libSampleID '"'] & ['annotation_db="' ann_db '"']))
         for j = 1:length(gene)
             if any(strcmp(mousegenes,gene(j))) && sum(length(find(strcmp(gene,gene(j)))))==1
                 count = count + 1;
