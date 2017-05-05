@@ -11,5 +11,4 @@ The documentation can be found here:
 * Get ongoing help at https://datajoint.slack.com
 
 # A minimal example
-A minimal example for navigating and querying the `seq` database in python is found in [Minimal.ipynb](notebooks/Minimal.ipynb).
-
+A minimal example for navigating and querying the `seq` database in python is found in [Minimal.ipynb](http://nbviewer.jupyter.org/github/atlab/seq/blob/master/notebooks/Minimal.ipynb).
