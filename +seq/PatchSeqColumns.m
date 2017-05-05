@@ -10,6 +10,7 @@ layer                       : enum('1','2/3','4','5','6','unknown') # layer posi
 firing_pattern              : enum('excitatory','excitatory-burst','fast spiking','regular spiking','neurogliaform','unknown') # firing pattern of cell
 asp                         : enum('FS','XJ','SL','BL','DWK','ALW','GL','unknown') # initials of person who aspirated cell contents
 ephys_trace=null            : longblob                      # raw ephys traces
+region="unknown"            : enum('V1','SS1','M1','other','unknown') # region of cortex, if known
 %}
 
 classdef PatchSeqColumns < dj.Manual
